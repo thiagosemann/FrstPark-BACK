@@ -19,6 +19,7 @@ const createUser = async (request, response) => {
     return response.status(409).json({ error: error.message });
   }
 };
+ 
 
 const loginUser = async (request, response) => {
   try {

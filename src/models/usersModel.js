@@ -42,11 +42,10 @@ const createUser = async (user) => {
 
 const loginUser = async (email, password) => {
   const query = `
-    SELECT users.*, Buildings.name AS building_name
-    FROM users
-    LEFT JOIN Buildings ON users.building_id = Buildings.id
-    WHERE email = ?
-  `;
+  SELECT *
+  FROM users
+  WHERE email = ?;
+`;
   const [users] = await connection.execute(query, [email]);
 
   if (users.length > 0) {
@@ -111,12 +110,6 @@ const updateUser = async (id, user) => {
 };
 
 
-const getUsersByBuilding = async (building_id) => {
-  const query = 'SELECT * FROM users WHERE building_id = ?';
-  const [users] = await connection.execute(query, [building_id]);
-  return users;
-};
-
 const deleteUser = async (id) => {
   // Check if the user exists
   const getUserQuery = 'SELECT * FROM users WHERE id = ?';
@@ -143,6 +136,5 @@ module.exports = {
   loginUser,
   getUser,
   updateUser,
-  getUsersByBuilding,
   deleteUser
 };

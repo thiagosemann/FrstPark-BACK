@@ -12,24 +12,23 @@ const getAllUsers = async () => {
 const saltRounds = 10;
 
 const createUser = async (user) => {
-  const { first_name, last_name, cpf, email, data_nasc, telefone, building_id, apt_name, credito, password, role } = user;
+  const { first_name, last_name, cpf, email, password, role } = user;
 
   // Gere o hash da senha
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-  const checkUserExistsQuery = 'SELECT * FROM users WHERE cpf = ? OR email = ? OR telefone = ?';
-  const [existingUsers] = await connection.execute(checkUserExistsQuery, [cpf, email, telefone]);
+  const checkUserExistsQuery = 'SELECT * FROM users WHERE cpf = ? OR email = ?';
+  const [existingUsers] = await connection.execute(checkUserExistsQuery, [cpf, email]);
 
   if (existingUsers.length > 0) {
     let conflictField = '';
     if (existingUsers[0].cpf === cpf) conflictField = 'CPF';
     else if (existingUsers[0].email === email) conflictField = 'e-mail';
-    else if (existingUsers[0].telefone === telefone) conflictField = 'telefone';
     throw new Error(`Usuário com esse ${conflictField} já existe.`);
   }
 
-  const insertUserQuery = 'INSERT INTO users (first_name, last_name, cpf, email, data_nasc, telefone, building_id, apt_name, credito, password, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-  const values = [first_name, last_name, cpf, email, data_nasc, telefone, building_id, apt_name, credito, hashedPassword, role];
+  const insertUserQuery = 'INSERT INTO users (first_name, last_name, cpf, email, password, role) VALUES (?, ?, ?, ?, ?, ?)';
+  const values = [first_name, last_name, cpf, email, hashedPassword, role];
 
   try {
     const [result] = await connection.execute(insertUserQuery, values);
@@ -75,7 +74,7 @@ const getUser = async (id) => {
 };
 
 const updateUser = async (id, user) => {
-  const { first_name, last_name, cpf, email, data_nasc, telefone, credito, password, role, apt_name } = user;
+  const { first_name, last_name, cpf, email, password, role } = user;
 
   const getUserQuery = 'SELECT * FROM users WHERE id = ?';
   const [existingUsers] = await connection.execute(getUserQuery, [id]);
@@ -91,14 +90,14 @@ const updateUser = async (id, user) => {
 
   const updateUserQuery = `
     UPDATE users 
-    SET first_name = ?, last_name = ?, cpf = ?, email = ?, data_nasc = ?, telefone = ?, credito = ?, role = ?, apt_name = ? 
+    SET first_name = ?, last_name = ?, cpf = ?, email = ?, role = ?
     ${password ? ', password = ?' : ''} 
     WHERE id = ?
   `;
 
   const values = password
-    ? [first_name, last_name, cpf, email, data_nasc, telefone, credito, role, apt_name, hashedPassword, id]
-    : [first_name, last_name, cpf, email, data_nasc, telefone, credito, role, apt_name, id];
+    ? [first_name, last_name, cpf, email,  role, hashedPassword, id]
+    : [first_name, last_name, cpf, email,  role,  id];
 
   try {
     await connection.execute(updateUserQuery, values);
